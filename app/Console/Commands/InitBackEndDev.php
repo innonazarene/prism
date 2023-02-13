@@ -110,7 +110,7 @@ class InitBackEndDev extends Command
 			$basePath = base_path('App\\Http\\Controllers\\'.$className.'Controller.php');
 			$haystack = file_get_contents($basePath);
 			$haystack = str_replace('}', '', $haystack);
-			$body .= '{'.PHP_EOL.'    //Index'.PHP_EOL.'    public function index()'.PHP_EOL.'    {'.PHP_EOL.'        return '.$className.'::with([])->get()->limit(1000);'.PHP_EOL.'    }'.PHP_EOL;
+			$body .= '{'.PHP_EOL.'    //Index'.PHP_EOL.'    public function index()'.PHP_EOL.'    {'.PHP_EOL.'        return '.$className.'::with([])->get()->take(1000);'.PHP_EOL.'    }'.PHP_EOL;
 			$body .= ''.PHP_EOL.'    //create'.PHP_EOL.'    public function create()'.PHP_EOL.'    {'.PHP_EOL.'        '.PHP_EOL.'    }'.PHP_EOL;
 			$body .= ''.PHP_EOL.'    //store'.PHP_EOL.'    public function store(Request $request)'.PHP_EOL.'    {'.PHP_EOL.'        return '.$className.'::create($request->all());'.PHP_EOL.'    }'.PHP_EOL;
 			$body .= ''.PHP_EOL.'    //show'.PHP_EOL.'    public function show($id)'.PHP_EOL.'    {'.PHP_EOL.'        return '.$className.'::findOrFail($id);'.PHP_EOL.'    }'.PHP_EOL;
@@ -128,15 +128,14 @@ class InitBackEndDev extends Command
 			$routes_content .= PHP_EOL."Route::Resource('".strtolower($className)."', ".$className."Controller::class);";
 			$routes_use_content .= PHP_EOL.'use App\Http\Controllers\\'.$className.'Controller;';
 
-			echo 'Done:'.$className.', ';
+			echo PHP_EOL.'Done:'.$className.', ';
 		}
 		$webFileContents = str_replace('<?php','<?php'.PHP_EOL.$routes_use_content, $webFileContents);
-		echo 'Done: Added WebFileContents -> routes use';
+		echo PHP_EOL.'Done: Added WebFileContents -> routes use';
 		$webFileContents = str_replace('});','});'.PHP_EOL.PHP_EOL.$routes_content, $webFileContents);
-		echo 'Done: Added WebFileContents -> routes content';
+		echo PHP_EOL.'Done: Added WebFileContents -> routes content';
 
 		file_put_contents(base_path('routes/web.php'), $webFileContents);
-
 		Artisan::call('route:clear');
 
     }
