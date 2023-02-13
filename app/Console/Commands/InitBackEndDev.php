@@ -137,7 +137,7 @@ class InitBackEndDev extends Command
 
 		file_put_contents(base_path('routes/web.php'), $webFileContents);
 
-
+		Artisan::call('route:clear');
 
     }
 }
