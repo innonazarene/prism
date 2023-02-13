@@ -124,7 +124,7 @@ class InitBackEndDev extends Command
 				$haystack = str_replace($this->needles['table'], $this->needles['table'].PHP_EOL.'use App\\Models\\'.$className.';', $haystack);
 			}
 
-			// file_put_contents($basePath, $haystack);
+			file_put_contents($basePath, $haystack);
 			$routes_content .= PHP_EOL."Route::Resource('".strtolower($className)."', ".$className."Controller::class);";
 			$routes_use_content .= PHP_EOL.'use App\Http\Controllers\\'.$className.'Controller;';
 
