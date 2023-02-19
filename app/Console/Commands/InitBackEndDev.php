@@ -57,13 +57,11 @@ class InitBackEndDev extends Command
 		$this->cleanFiles();
 		$this->checkAndInstallPackage();
         $this->migrateDatabase();
-		$this->startSeeding($tables,env('DB_DATABASE'));
+		//$this->startSeeding($tables,env('DB_DATABASE'));
 		$this->makeCoreRequest();
 		$this->generateModelsAndControllers($tables);
         $this->updateApiRoutes($tables,'v1');
 		Artisan::call('route:clear');
-
-
 
     }
 
