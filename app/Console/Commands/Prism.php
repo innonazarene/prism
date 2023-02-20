@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
-class InitBackEndDev extends Command
+class Prism extends Command
 {
     /**
      * The name and signature of the console command.
