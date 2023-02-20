@@ -35,7 +35,7 @@ class InitBackEndDev extends Command
 
 
     }
-	protected $path = '';
+
 	protected $packages =  [
 		'kitloong/laravel-migrations-generator',
 		'orangehill/iseed',
