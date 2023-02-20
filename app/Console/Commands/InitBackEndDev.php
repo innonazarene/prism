@@ -208,7 +208,11 @@ class InitBackEndDev extends Command
 			\$filterParams = explode(',', \$validatedData['filter']);
 			foreach (\$filterParams as \$filterParam) {
 				\$filterArray = explode(':', \$filterParam);
-				\$query->where(\$filterArray[0], \$filterArray[1]);
+				\$column = \$filterArray[0];
+				\$value = \$filterArray[1] ?? null;
+				if (\$value !== null) {
+					\$query->where(\$column, \$value);
+				}
 			}
 		}
 		if (isset(\$validatedData['limit'])) {
