@@ -60,10 +60,45 @@ class InitBackEndDev extends Command
 		//$this->startSeeding($tables,env('DB_DATABASE'));
 		$this->makeCoreRequest();
 		$this->generateModelsAndControllers($tables);
+		$this->generateCORSMiddleWare();
         $this->updateApiRoutes($tables,'v1');
 		Artisan::call('route:clear');
 
     }
+
+	private function generateCORSMiddleWare()
+	{
+		$valueString = '            \App\Http\Middleware\CORSMiddleware::class,';
+		$replaceString = "'throttle:api',";
+		$corsBasePath = base_path('app/Http/Middleware/CORSMiddleware.php');
+		$kernelBasePath = base_path('app/Http/Kernel.php');
+		shell_exec('rm -rf '.$corsBasePath);
+		Artisan::call('make:middleware CORSMiddleware');
+
+
+		$corsContent = file_get_contents($corsBasePath);
+		$kernelContent = file_get_contents($kernelBasePath);
+		$tempContent = "//Example : \$allowedMethods = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
+		".PHP_EOL."        \$allowedMethods = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
+
+		if (in_array(\$request->method(), \$allowedMethods)) {
+			\$response = \$next(\$request);
+			\$response->header('Access-Control-Allow-Origin', '*');
+			\$response->header('Access-Control-Allow-Methods', implode(',', \$allowedMethods));
+			if (\$request->method() == 'OPTIONS') {
+				\$response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+			}
+			return \$response;
+		}
+
+		return response()->json(['message' => 'Forbidden'], 403);";
+		$corsContent = str_replace('return $next($request);',$tempContent,$corsContent);
+		$corsContent = str_replace('	','    ',$corsContent);
+
+		$kernelContent = (strpos($kernelContent,$valueString)) ? $kernelContent : str_replace($replaceString,$replaceString.PHP_EOL.$valueString,$kernelContent);
+		file_put_contents($corsBasePath, $corsContent);
+		file_put_contents($kernelBasePath, $kernelContent);
+	}
 
 	private function getDatabaseTables()
 	{
