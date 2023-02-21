@@ -283,7 +283,6 @@ class Prism extends Command
 			$this->runBackupAndRestore();
 			echo PHP_EOL.'Done: Make Directory Backup';
 		}else{
-			mkdir(base_path('public/backup'));
 			shell_exec('rm -rf app/models/* & rm -rf database/migrations/* & rm -rf app/Http/Controllers/*');
 		}
 		echo PHP_EOL.'Done: Clean Files';
