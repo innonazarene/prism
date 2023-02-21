@@ -35,7 +35,7 @@ class Prism extends Command
 
 
     }
-
+	protected $timestamps = false;
 	protected $packages =  [
 		'kitloong/laravel-migrations-generator',
 		'orangehill/iseed',
@@ -118,18 +118,23 @@ class Prism extends Command
             if($table === 'migrations') continue;
             $className = Str::camel(Str::singular($table));
             $className = ucfirst($className);
-            Artisan::call('krlove:generate:model', ['class-name' => $className, '--table-name' => $table, '--output-path'=>'Models','--namespace'=>'App\Models']);
+            Artisan::call('krlove:generate:model', ['class-name' => $className,  '--table-name' => $table, '--output-path'=>'Models','--namespace'=>'App\Models','--no-timestamps']);
 			Artisan::call('make:controller '.$className.'Controller');
+			$noTimestamp = '    public $timestamps = '.(($this->timestamps) ? 'true' : 'false').';';
+
+			$modelContent = file_get_contents(base_path('App\\Models\\'.$className.'.php'));
+			$modelContent = str_replace('];', '];'.PHP_EOL.$noTimestamp, $modelContent);
+			file_put_contents(base_path('App\\Models\\'.$className.'.php'), $modelContent);
 
 			//edit content
 			$body = '';
 			$basePath = base_path('App\\Http\\Controllers\\'.$className.'Controller.php');
 			$ctrlContent = file_get_contents($basePath);
 			$ctrlContent = str_replace('}', '', $ctrlContent);
-			$body .= '{'.PHP_EOL.'    //Index Example : http://127.0.0.1:8000/api/{{PREFIX}}/{{API-ROUTE}}/?with={{WITH-FUNCTION(found in models)}}&'.PHP_EOL.'    //orderBy={{FIELD-NAME}:{{ASC or DESC}}&limit={{LIMIT}}&fields={{FIELD}}&filter={{FILTER-FIELD}}:{{VALUE}}'.PHP_EOL.'    public function index(Request $request)'.PHP_EOL.'    {'.PHP_EOL.'        return $this->displayRequest(NULL,$request,new '.$className.');'.PHP_EOL.'    }'.PHP_EOL;
+			$body .= '{'.PHP_EOL.'    //Index Example : http://127.0.0.1:8000/api/{{PREFIX}}/{{API-ROUTE}}/?with={{WITH-FUNCTION(found in models)}}&'.PHP_EOL.'    //orderBy={{FIELD-NAME}:{{ASC or DESC}}&limit={{LIMIT}}&fields={{FIELD}}&filter={{FILTER-FIELD}}:{{VALUE}}'.PHP_EOL.'    public function index(Request $request)'.PHP_EOL.'    {'.PHP_EOL.'        return response()->json($this->displayRequest(NULL,$request,new '.$className.'));'.PHP_EOL.'    }'.PHP_EOL;
 			$body .= ''.PHP_EOL.'    //create'.PHP_EOL.'    public function create()'.PHP_EOL.'    {'.PHP_EOL.'        '.PHP_EOL.'    }'.PHP_EOL;
 			$body .= ''.PHP_EOL.'    //store'.PHP_EOL.'    public function store(Request $request)'.PHP_EOL.'    {'.PHP_EOL.'        return '.$className.'::create($request->all());'.PHP_EOL.'    }'.PHP_EOL;
-			$body .= ''.PHP_EOL.'    //show Example : http://127.0.0.1:8000/api/{{PREFIX}}/{{API-ROUTE}}/{{ID}}?with={{WITH-FUNCTION(found in models)}}&'.PHP_EOL.'    //orderBy={{FIELD-NAME}:{{ASC or DESC}}&limit={{LIMIT}}&fields={{FIELD}}&filter={{FILTER-FIELD}}:{{VALUE}}'.PHP_EOL.'    public function show(Request $request, $id)'.PHP_EOL.'    {'.PHP_EOL.'        return $this->displayRequest($id,$request,new '.$className.');'.PHP_EOL.'    }'.PHP_EOL;
+			$body .= ''.PHP_EOL.'    //show Example : http://127.0.0.1:8000/api/{{PREFIX}}/{{API-ROUTE}}/{{ID}}?with={{WITH-FUNCTION(found in models)}}&'.PHP_EOL.'    //orderBy={{FIELD-NAME}:{{ASC or DESC}}&limit={{LIMIT}}&fields={{FIELD}}&filter={{FILTER-FIELD}}:{{VALUE}}'.PHP_EOL.'    public function show(Request $request, $id)'.PHP_EOL.'    {'.PHP_EOL.'        return response()->json($this->displayRequest($id,$request,new '.$className.'));'.PHP_EOL.'    }'.PHP_EOL;
 			$body .= ''.PHP_EOL.'    //edit'.PHP_EOL.'    public function edit($id)'.PHP_EOL.'    {'.PHP_EOL.'        '.PHP_EOL.'    }'.PHP_EOL;
 			$body .= ''.PHP_EOL.'    //update'.PHP_EOL.'    public function update(Request $request, $id)'.PHP_EOL.'    {'.PHP_EOL.'        '.PHP_EOL.'        $data = '.$className.'::findOrFail($id);'.PHP_EOL.'        $data->update($request->all());'.PHP_EOL.'        return $data;'.PHP_EOL.''.PHP_EOL.'    }'.PHP_EOL;
 			$body .= ''.PHP_EOL.'    //destroy'.PHP_EOL.'    public function destroy($id)'.PHP_EOL.'    {'.PHP_EOL.'        '.PHP_EOL.'        $data = '.$className.'::findOrFail($id);'.PHP_EOL.'        $data->delete();'.PHP_EOL.'        return $data;'.PHP_EOL.''.PHP_EOL.'    }'.PHP_EOL.PHP_EOL.'}';
@@ -271,16 +276,22 @@ class Prism extends Command
 
 	private function cleanFiles()
 	{
-		$this->backupOrRestoreFile(base_path('routes/api.php'), base_path('public/backup/api.backup.php'));
-		$this->backupOrRestoreFile(base_path('app/Http/Controllers/Controller.php'), base_path('public/backup/Controller.backup.php'));
+
 		if(!is_dir(base_path('public/backup')))
 		{
 			mkdir(base_path('public/backup'));
+			$this->runBackupAndRestore();
 			echo PHP_EOL.'Done: Make Directory Backup';
-
 		}else{
+			mkdir(base_path('public/backup'));
 			shell_exec('rm -rf app/models/* & rm -rf database/migrations/* & rm -rf app/Http/Controllers/*');
 		}
 		echo PHP_EOL.'Done: Clean Files';
+	}
+
+	public function runBackupAndRestore()
+	{
+		$this->backupOrRestoreFile(base_path('routes/api.php'), base_path('public/backup/api.backup.php'));
+		$this->backupOrRestoreFile(base_path('app/Http/Controllers/Controller.php'), base_path('public/backup/Controller.backup.php'));
 	}
 }
