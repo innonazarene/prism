@@ -36,6 +36,7 @@ class Prism extends Command
 
     }
 	protected $timestamps = false;
+	protected $isSquash = true;
 	protected $packages =  [
 		'kitloong/laravel-migrations-generator',
 		'orangehill/iseed',
@@ -92,7 +93,7 @@ class Prism extends Command
 	private function migrateDatabase()
 	{
 		//Migrate Database using this packages : https://github.com/kitloong/laravel-migrations-generator
-		shell_exec('start cmd.exe @cmd /k "php artisan migrate:generate --squash --skip-log & exit"');
+		shell_exec('start cmd.exe @cmd /k "php artisan migrate:generate '.($this->isSquash) ? '--squash' : ''.'--skip-log & exit"');
 		echo PHP_EOL.'Done:Migration';
 	}
 
