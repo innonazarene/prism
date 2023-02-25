@@ -92,7 +92,7 @@ class Prism extends Command
 	private function migrateDatabase()
 	{
 		//Migrate Database using this packages : https://github.com/kitloong/laravel-migrations-generator
-		shell_exec('start cmd.exe @cmd /k "php artisan migrate:generate --squash --skip-log & exit"');
+		shell_exec('start cmd.exe @cmd /k "php artisan migrate:generate --squash --skip-log"');
 		echo PHP_EOL.'Done:Migration';
 	}
 
@@ -269,6 +269,7 @@ class Prism extends Command
 
 		if(!is_dir($backupDir)) {
 			mkdir($backupDir);
+			mkdir(base_path('database/migrations'));
 			$apiContent = File::get($apiFilePath);
 			$controllerContent = File::get($controllerFilePath);
 
