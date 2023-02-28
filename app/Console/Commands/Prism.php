@@ -35,6 +35,8 @@ class Prism extends Command
 
 
     }
+	protected $includeTablesForSeeding = ['access','access_list'];
+
 	protected $timestamps = false;
 	protected $packages =  [
 		'kitloong/laravel-migrations-generator',
@@ -165,8 +167,15 @@ class Prism extends Command
 	{
 		foreach($tables as $table)
 		{
-			Artisan::call('iseed '.$table.' --classnameprefix='.$prefix);
-			echo PHP_EOL.'Done: Seeding - '.$table;
+			foreach($this->includeTablesForSeeding as $includeTable)
+			{
+				if($includeTable == $table)
+				{   echo PHP_EOL.'Start: Seeding - '.$table.PHP_EOL;
+					Artisan::call('iseed '.$table.' --classnameprefix='.$prefix);
+					echo PHP_EOL.'Done: Seeding - '.$table;
+				}
+
+			}
 		}
 	}
 
@@ -247,7 +256,6 @@ class Prism extends Command
 			$this->putFile('controller', $controllerBackupContent, $controllerFilePath);
 
 		}
-
 		echo PHP_EOL . 'Done: Clean Files'.PHP_EOL;
 	}
 
