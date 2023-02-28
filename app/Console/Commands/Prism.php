@@ -35,7 +35,7 @@ class Prism extends Command
 
 
     }
-	protected $includeTablesForSeeding = ['access','access_list'];
+	protected $includeTablesForSeeding = ['access'];
 
 	protected $timestamps = false;
 	protected $packages =  [
@@ -56,14 +56,14 @@ class Prism extends Command
     public function handle()
     {
 		$tables = $this->getDatabaseTables();
-		$this->cleanFiles();
-		$this->checkAndInstallPackage();
-        $this->migrateDatabase();
-		//$this->startSeeding($tables,env('DB_DATABASE'));
-		$this->makeCoreRequest();
-		$this->generateModelsAndControllers($tables);
-        $this->updateApiRoutes($tables,'v1');
-		Artisan::call('route:clear');
+		// $this->cleanFiles();
+		// $this->checkAndInstallPackage();
+        // $this->migrateDatabase();
+		$this->startSeeding($tables,env('DB_DATABASE'));
+		// $this->makeCoreRequest();
+		// $this->generateModelsAndControllers($tables);
+        // $this->updateApiRoutes($tables,'v1');
+		// Artisan::call('route:clear');
 
     }
 
@@ -165,18 +165,28 @@ class Prism extends Command
 
 	private function startSeeding($tables,$prefix)
 	{
-		foreach($tables as $table)
+		if(count($this->includeTablesForSeeding) > 0)
 		{
-			foreach($this->includeTablesForSeeding as $includeTable)
+			foreach($tables as $table)
 			{
-				if($includeTable == $table)
-				{   echo PHP_EOL.'Start: Seeding - '.$table.PHP_EOL;
-					Artisan::call('iseed '.$table.' --classnameprefix='.$prefix);
-					echo PHP_EOL.'Done: Seeding - '.$table;
+				foreach($this->includeTablesForSeeding as $includeTable)
+				{
+					if($includeTable == $table)
+					{   echo PHP_EOL.'Start: Seeding - '.$table.PHP_EOL;
+						Artisan::call('iseed '.$table.' --classnameprefix='.$prefix);
+						echo 'Done: Seeding - '.$table;
+					}
 				}
-
+			}
+		}else{
+			foreach($tables as $table)
+			{
+				echo PHP_EOL.'Start: Seeding - '.$table.PHP_EOL;
+				Artisan::call('iseed '.$table.' --classnameprefix='.$prefix);
+				echo 'Done: Seeding - '.$table;
 			}
 		}
+
 	}
 
 	private function makeCoreRequest()
