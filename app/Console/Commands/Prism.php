@@ -38,6 +38,7 @@ class Prism extends Command
 	protected $includeTablesForSeeding = ['access'];
 
 	protected $timestamps = false;
+    protected $migrateOption = '--squash --skip-log';
 	protected $packages =  [
 		'kitloong/laravel-migrations-generator',
 		'orangehill/iseed',
@@ -56,14 +57,14 @@ class Prism extends Command
     public function handle()
     {
 		$tables = $this->getDatabaseTables();
-		// $this->cleanFiles();
-		// $this->checkAndInstallPackage();
-        // $this->migrateDatabase();
-		$this->startSeeding($tables,env('DB_DATABASE'));
-		// $this->makeCoreRequest();
-		// $this->generateModelsAndControllers($tables);
-        // $this->updateApiRoutes($tables,'v1');
-		// Artisan::call('route:clear');
+		$this->cleanFiles();
+		$this->checkAndInstallPackage();
+        $this->migrateDatabase();
+		//$this->startSeeding($tables,env('DB_DATABASE'));
+		$this->makeCoreRequest();
+		$this->generateModelsAndControllers($tables);
+        $this->updateApiRoutes($tables,'v1');
+		Artisan::call('route:clear');
 
     }
 
@@ -93,7 +94,7 @@ class Prism extends Command
 	private function migrateDatabase()
 	{
 		//Migrate Database using this packages : https://github.com/kitloong/laravel-migrations-generator
-		shell_exec('start cmd.exe @cmd /k "php artisan migrate:generate --squash --skip-log & exit"');
+		shell_exec('start cmd.exe @cmd /k "php artisan migrate:generate '.$this->migrateOption.'" & exit');
 		echo PHP_EOL.'Done:Migration';
 	}
 
@@ -235,7 +236,7 @@ class Prism extends Command
 			\$query->select(explode(',', \$validatedData['fields']));
 		}
 		\$results = \$query->get();
-		return response()->json(\$results);
+		return \$results;
 	}";
 		$content = str_replace('	','    ',$content);
 		$coreCtrlContent = str_replace('}',$content.PHP_EOL."}", $coreCtrlContent);
@@ -247,26 +248,22 @@ class Prism extends Command
 
 	private function cleanFiles()
 	{
-		$backupDir = base_path('public/backup');
+		$backupDir = '';
 		$apiFilePath = base_path('routes/api.php');
 		$controllerFilePath = base_path('app/Http/Controllers/Controller.php');
 
-		if(!is_dir($backupDir)) {
+		if(!is_dir(base_path('public/backup'))) {
+            $backupDir = base_path('public/backup');
 			mkdir($backupDir);
-			$apiContent = File::get($apiFilePath);
-			$controllerContent = File::get($controllerFilePath);
-
-			$this->putFile('api', $apiContent, "$backupDir/api.backup.php");
-			$this->putFile('controller', $controllerContent, "$backupDir/Controller.backup.php");
+            $this->putFile('api', File::get($apiFilePath), "$backupDir/api.backup.php");
+            $this->putFile('controller', File::get($controllerFilePath), "$backupDir/Controller.backup.php");
 		}else{
-			$controllerBackupContent = File::get("$backupDir/Controller.backup.php");
-			$apiBackupContent = File::get("$backupDir/api.backup.php");
-			shell_exec('rm -rf app/models/* & rm -rf database/migrations/* & rm -rf app/Http/Controllers/*');
-			$this->putFile('api', $apiBackupContent, $apiFilePath);
-			$this->putFile('controller', $controllerBackupContent, $controllerFilePath);
-
-		}
-		echo PHP_EOL . 'Done: Clean Files'.PHP_EOL;
+            $backupDir = base_path('public/backup');
+            shell_exec('rm -rf app/models/* & rm -rf database/migrations/* & rm -rf app/Http/Controllers/*');
+            $this->putFile('api', File::get("$backupDir/api.backup.php"), $apiFilePath);
+		    $this->putFile('controller', File::get("$backupDir/Controller.backup.php"), $controllerFilePath);
+        }
+        echo PHP_EOL . 'Done: Clean Files'.PHP_EOL;
 	}
 
 
