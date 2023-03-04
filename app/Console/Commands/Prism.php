@@ -36,9 +36,8 @@ class Prism extends Command
 
     }
 	protected $includeTablesForSeeding = ['access'];
-
 	protected $timestamps = false;
-    protected $migrateOption = '--squash --skip-log';
+    protected $migrateOption = '--skip-log & exit';
 	protected $packages =  [
 		'kitloong/laravel-migrations-generator',
 		'orangehill/iseed',
@@ -47,7 +46,6 @@ class Prism extends Command
 	protected $needles = [
 		'table' => 'namespace App\Http\Controllers;',
 	];
-
 
     /**
      * Execute the console command.
@@ -67,9 +65,6 @@ class Prism extends Command
 		Artisan::call('route:clear');
 
     }
-
-
-
 	private function getDatabaseTables()
 	{
 		$tables = DB::select('SHOW TABLES');
@@ -94,7 +89,7 @@ class Prism extends Command
 	private function migrateDatabase()
 	{
 		//Migrate Database using this packages : https://github.com/kitloong/laravel-migrations-generator
-		shell_exec('start cmd.exe @cmd /k "php artisan migrate:generate '.$this->migrateOption.'" & exit');
+		shell_exec('start cmd.exe @cmd /k "php artisan migrate:generate '.$this->migrateOption);
 		echo PHP_EOL.'Done:Migration';
 	}
 
@@ -259,9 +254,13 @@ class Prism extends Command
             $this->putFile('controller', File::get($controllerFilePath), "$backupDir/Controller.backup.php");
 		}else{
             $backupDir = base_path('public/backup');
-            shell_exec('rm -rf app/models/* & rm -rf database/migrations/* & rm -rf app/Http/Controllers/*');
-            $this->putFile('api', File::get("$backupDir/api.backup.php"), $apiFilePath);
-		    $this->putFile('controller', File::get("$backupDir/Controller.backup.php"), $controllerFilePath);
+
+            if(file_exists($backupDir."/api.backup.php") && $backupDir."/Controller.backup.php")
+            {
+                $this->putFile('api', File::get("$backupDir/api.backup.php"), $apiFilePath);
+                $this->putFile('controller', File::get("$backupDir/Controller.backup.php"), $controllerFilePath);
+                shell_exec('rm -rf app/models/* & rm -rf database/migrations/* & rm -rf app/Http/Controllers/*');
+            }
         }
         echo PHP_EOL . 'Done: Clean Files'.PHP_EOL;
 	}
