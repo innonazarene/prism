@@ -35,14 +35,23 @@ class Prism extends Command
 
 
     }
-	protected $includeTablesForSeeding = ['access'];
-	protected $timestamps = false;
+    //this $includeTablesForSeeding : list of table include for seeding:
+	protected $includeTablesForSeeding = [];
+
+    //set the timestamp of model true : false
+	protected $timestamps = true;
+
+    //--squash  = migrate dataase in 1 single file
     protected $migrateOption = '--skip-log & exit';
+
+    //list of packages
 	protected $packages =  [
 		'kitloong/laravel-migrations-generator',
 		'orangehill/iseed',
 		'krlove/eloquent-model-generator'
 	];
+
+    //list of needles
 	protected $needles = [
 		'table' => 'namespace App\Http\Controllers;',
 	];
@@ -138,7 +147,7 @@ class Prism extends Command
 
 	private function updateApiRoutes($tables,$prefix)
 	{
-		$routes_content = PHP_EOL.'Route::prefix("'.$prefix.'")->group(function(){';
+		$routes_content = '//for sanctum:auth you can add routes here'.PHP_EOL.'Route::prefix("YOUR_PREFIX")->middleware(\'auth:sanctum\')->group(function(){});'.PHP_EOL.PHP_EOL.'Route::prefix("'.$prefix.'")->group(function(){';
 		$routes_use_content = '';
 		foreach($tables as $table)
 		{
@@ -243,25 +252,33 @@ class Prism extends Command
 
 	private function cleanFiles()
 	{
-		$backupDir = '';
-		$apiFilePath = base_path('routes/api.php');
-		$controllerFilePath = base_path('app/Http/Controllers/Controller.php');
-
-		if(!is_dir(base_path('public/backup'))) {
-            $backupDir = base_path('public/backup');
-			mkdir($backupDir);
-            $this->putFile('api', File::get($apiFilePath), "$backupDir/api.backup.php");
-            $this->putFile('controller', File::get($controllerFilePath), "$backupDir/Controller.backup.php");
-		}else{
-            $backupDir = base_path('public/backup');
-
-            if(file_exists($backupDir."/api.backup.php") && $backupDir."/Controller.backup.php")
-            {
-                $this->putFile('api', File::get("$backupDir/api.backup.php"), $apiFilePath);
-                $this->putFile('controller', File::get("$backupDir/Controller.backup.php"), $controllerFilePath);
-                shell_exec('rm -rf app/models/* & rm -rf database/migrations/* & rm -rf app/Http/Controllers/*');
-            }
+        if(!file_exists(base_path('public/backup')."/api.backup.php") &&
+         !file_exists(base_path('public/backup')."/Controller.backup.php")){
+            $apiFile = File::get(base_path('routes/api.php'));
+            $controllerFile = File::get(base_path('app/Http/Controllers/Controller.php'));
+        }else{
+            $apiFile = File::get(base_path('public/backup')."/api.backup.php");
+            $controllerFile = File::get(base_path('public/backup')."/Controller.backup.php");
         }
+        shell_exec('rm -rf public/backup');
+        shell_exec('rm -rf app/models/* & rm -rf database/migrations/* & rm -rf app/Http/Controllers/*');
+
+        //check if the database/migration folder is exist
+        if(!is_dir(base_path('database/migrations'))) {
+            //create folder "migrations"
+            mkdir(base_path('database/migrations'));
+        }
+
+        //check if the public/backup folder is exist
+		if(!is_dir(base_path('public/backup'))) {
+            //create backup folder
+			mkdir(base_path('public/backup'));
+            $this->putFile('api', $apiFile, base_path('public/backup/api.backup.php'));
+            $this->putFile('controller', $controllerFile, base_path('public/backup/Controller.backup.php'));
+            $this->putFile('api', $apiFile, base_path('routes/api.php'));
+            $this->putFile('controller', $controllerFile, base_path('app/Http/Controllers/Controller.php'));
+        }
+
         echo PHP_EOL . 'Done: Clean Files'.PHP_EOL;
 	}
 
