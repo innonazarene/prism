@@ -70,7 +70,7 @@ class Prism extends Command
 		//$this->startSeeding($tables,env('DB_DATABASE'));
 		$this->makeCoreRequest();
 		$this->generateModelsAndControllers($tables);
-        $this->updateApiRoutes($tables,'v1');
+        $this->updateApiRoutes($tables,'public');
 		Artisan::call('route:clear');
 
     }
@@ -147,7 +147,7 @@ class Prism extends Command
 
 	private function updateApiRoutes($tables,$prefix)
 	{
-		$routes_content = '//for sanctum:auth you can add routes here'.PHP_EOL.'Route::prefix("YOUR_PREFIX")->middleware(\'auth:sanctum\')->group(function(){});'.PHP_EOL.PHP_EOL.'Route::prefix("'.$prefix.'")->group(function(){';
+		$routes_content = '//for auth:sanctum you can add routes here'.PHP_EOL.'Route::prefix("YOUR_PREFIX")->middleware(\'auth:sanctum\')->group(function(){});'.PHP_EOL.PHP_EOL.'Route::prefix("'.$prefix.'")->group(function(){';
 		$routes_use_content = '';
 		foreach($tables as $table)
 		{
@@ -155,7 +155,7 @@ class Prism extends Command
 			$className = Str::camel(Str::singular($table));
 			$className = ucfirst($className);
 			$apiFileContents = File::get(base_path('routes/api.php'));
-			$routes_content .= PHP_EOL."    Route::Resource('".strtolower($className)."', ".$className."Controller::class);";
+			$routes_content .= PHP_EOL."    Route::Resource('".strtolower(Str::plural($className))."', ".$className."Controller::class)->only(['index','show']);";
 			$routes_use_content .= PHP_EOL.'use App\Http\Controllers\\'.$className.'Controller;';
 		}
 		$apiFileContents = str_replace('<?php','<?php'.PHP_EOL.$routes_use_content, $apiFileContents);
