@@ -210,7 +210,7 @@ class Prism extends Command
 		\$validatedData = \$request->validate(\$this->requestRules);
 		\$query = \$model->query();
 		if(\$id != ''){
-			\$query->findOrFail(\$id);
+			\return  \$query->where('id',\$id)->get();
 		}
 		if (isset(\$validatedData['with'])) {
 			\$query->with(explode(',', \$validatedData['with']));
@@ -253,7 +253,7 @@ class Prism extends Command
 	private function cleanFiles()
 	{
         if(!file_exists(base_path('public/backup')."/api.backup.php") &&
-         !file_exists(base_path('public/backup')."/Controller.backup.php")){
+        !file_exists(base_path('public/backup')."/Controller.backup.php")){
             $apiFile = File::get(base_path('routes/api.php'));
             $controllerFile = File::get(base_path('app/Http/Controllers/Controller.php'));
         }else{
