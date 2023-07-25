@@ -210,7 +210,7 @@ class Prism extends Command
 		\$validatedData = \$request->validate(\$this->requestRules);
 		\$query = \$model->query();
 		if(\$id != ''){
-			\return  \$query->where('id',\$id)->get();
+			return  \$query->where('id',\$id)->get();
 		}
 		if (isset(\$validatedData['with'])) {
 			\$query->with(explode(',', \$validatedData['with']));
