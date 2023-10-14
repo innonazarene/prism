@@ -113,6 +113,7 @@ class Prism extends Command
             $className = ucfirst($className);
             Artisan::call('krlove:generate:model', ['class-name' => $className,  '--table-name' => $table, '--output-path'=>'Models','--namespace'=>'App\Models','--no-timestamps']);
 			Artisan::call('make:controller '.$className.'Controller');
+            Artisan::call('make:request '.$className.'Request');
 			$noTimestamp = '    public $timestamps = '.(($this->timestamps) ? 'true' : 'false').';';
 
 			$modelContent = file_get_contents(base_path('App\\Models\\'.$className.'.php'));
@@ -125,12 +126,12 @@ class Prism extends Command
 			$ctrlContent = file_get_contents($basePath);
 			$ctrlContent = str_replace('}', '', $ctrlContent);
 			$body .= '{'.PHP_EOL.'    //Index Example : http://127.0.0.1:8000/api/{{PREFIX}}/{{API-ROUTE}}/?with={{WITH-FUNCTION(found in models)}}&'.PHP_EOL.'    //orderBy={{FIELD-NAME}:{{ASC or DESC}}&limit={{LIMIT}}&fields={{FIELD}}&filter={{FILTER-FIELD}}:{{VALUE}}'.PHP_EOL.'    public function index(Request $request)'.PHP_EOL.'    {'.PHP_EOL.'        return response()->json($this->displayRequest(NULL,$request,new '.$className.'));'.PHP_EOL.'    }'.PHP_EOL;
-			$body .= ''.PHP_EOL.'    //create'.PHP_EOL.'    public function create()'.PHP_EOL.'    {'.PHP_EOL.'        '.PHP_EOL.'    }'.PHP_EOL;
+			$body .= ''.PHP_EOL.'    //create'.PHP_EOL.'    public function create()'.PHP_EOL.'    {}'.PHP_EOL;
 			$body .= ''.PHP_EOL.'    //store'.PHP_EOL.'    public function store(Request $request)'.PHP_EOL.'    {'.PHP_EOL.'        return '.$className.'::create($request->all());'.PHP_EOL.'    }'.PHP_EOL;
 			$body .= ''.PHP_EOL.'    //show Example : http://127.0.0.1:8000/api/{{PREFIX}}/{{API-ROUTE}}/{{ID}}?with={{WITH-FUNCTION(found in models)}}&'.PHP_EOL.'    //orderBy={{FIELD-NAME}:{{ASC or DESC}}&limit={{LIMIT}}&fields={{FIELD}}&filter={{FILTER-FIELD}}:{{VALUE}}'.PHP_EOL.'    public function show(Request $request, $id)'.PHP_EOL.'    {'.PHP_EOL.'        return response()->json($this->displayRequest($id,$request,new '.$className.'));'.PHP_EOL.'    }'.PHP_EOL;
-			$body .= ''.PHP_EOL.'    //edit'.PHP_EOL.'    public function edit($id)'.PHP_EOL.'    {'.PHP_EOL.'        '.PHP_EOL.'    }'.PHP_EOL;
-			$body .= ''.PHP_EOL.'    //update'.PHP_EOL.'    public function update(Request $request, $id)'.PHP_EOL.'    {'.PHP_EOL.'        '.PHP_EOL.'        $data = '.$className.'::findOrFail($id);'.PHP_EOL.'        $data->update($request->all());'.PHP_EOL.'        return $data;'.PHP_EOL.''.PHP_EOL.'    }'.PHP_EOL;
-			$body .= ''.PHP_EOL.'    //destroy'.PHP_EOL.'    public function destroy($id)'.PHP_EOL.'    {'.PHP_EOL.'        '.PHP_EOL.'        $data = '.$className.'::findOrFail($id);'.PHP_EOL.'        $data->delete();'.PHP_EOL.'        return $data;'.PHP_EOL.''.PHP_EOL.'    }'.PHP_EOL.PHP_EOL.'}';
+			$body .= ''.PHP_EOL.'    //edit'.PHP_EOL.'    public function edit($id)'.PHP_EOL.'    {}'.PHP_EOL;
+			$body .= ''.PHP_EOL.'    //update'.PHP_EOL.'    public function update(Request $request, $id)'.PHP_EOL.'    {'.PHP_EOL.'        '.PHP_EOL.'        $data = '.$className.'::find($id);'.PHP_EOL.'        $data->update($request->all());'.PHP_EOL.'        return response()->json("message"=>"", "data" => $data);'.PHP_EOL.''.PHP_EOL.'    }'.PHP_EOL;
+			$body .= ''.PHP_EOL.'    //destroy'.PHP_EOL.'    public function destroy($id)'.PHP_EOL.'    {'.PHP_EOL.'        '.PHP_EOL.'        $data = '.$className.'::findOrFail($id);'.PHP_EOL.'        $data->delete();'.PHP_EOL.'        return response()->json("message"=>"", "data" => $data);'.PHP_EOL.''.PHP_EOL.'    }'.PHP_EOL.PHP_EOL.'}';
 			$ctrlContent = str_replace('{', $body, $ctrlContent);
 
 			$ctrlContent = str_replace($body, $body, $ctrlContent);
@@ -261,7 +262,8 @@ class Prism extends Command
             $controllerFile = File::get(base_path('public/backup')."/Controller.backup.php");
         }
         shell_exec('rm -rf public/backup');
-        shell_exec('rm -rf app/models/* & rm -rf database/migrations/* & rm -rf app/Http/Controllers/*');
+        shell_exec('rm -rf public/backup');
+        shell_exec('rm -rf app/models/* & rm -rf database/migrations/* & rm -rf app/Http/Controllers/* & rm -rf app/Http/requests/*');
 
         //check if the database/migration folder is exist
         if(!is_dir(base_path('database/migrations'))) {
