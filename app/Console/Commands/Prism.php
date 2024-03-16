@@ -65,6 +65,7 @@ class Prism extends Command
     {
 		$tables = $this->getDatabaseTables();
 		$this->cleanFiles();
+        $this->laravel_11();
 		$this->checkAndInstallPackage();
         $this->migrateDatabase();
 		//$this->startSeeding($tables,env('DB_DATABASE'));
@@ -73,6 +74,10 @@ class Prism extends Command
         $this->updateApiRoutes($tables,'public');
 		Artisan::call('route:clear');
 
+    }
+    private function laravel_11()
+    {
+        Artisan::call("install:api");
     }
 	private function getDatabaseTables()
 	{
