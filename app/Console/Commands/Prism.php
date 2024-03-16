@@ -77,7 +77,7 @@ class Prism extends Command
     }
     private function laravel_11()
     {
-        Artisan::call("install:api");
+        shell_exec('start cmd.exe @cmd /k "php artisan install:api');
     }
 	private function getDatabaseTables()
 	{
