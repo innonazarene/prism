@@ -63,10 +63,10 @@ class Prism extends Command
      */
     public function handle() : void
     {
+        $this->laravel_11();
+        $this->checkAndInstallPackage();
 		$tables = $this->getDatabaseTables();
 		$this->cleanFiles();
-        $this->laravel_11();
-		$this->checkAndInstallPackage();
         $this->migrateDatabase();
 		//$this->startSeeding($tables,env('DB_DATABASE'));
 		$this->makeCoreRequest();
